@@ -6,35 +6,48 @@ import (
 	"strings"
 )
 
-func setToString(set []int) string {
+func setToString(set []int, index bool) string {
+	if len(set) == 0 {
+		return "nil"
+	}
 	res := make([]string, len(set))
 	for i, e := range set {
-		res[i] = strconv.Itoa(e)
+		if index {
+			res[i] = "S" + strconv.Itoa(e+1)
+		} else {
+			res[i] = strconv.Itoa(e)
+		}
 	}
-	return fmt.Sprintf("(%s)", strings.Join(res, " "))
+	return strings.Join(res, " ")
 }
 
-func setsToString(sets [][]int) string {
+func setsToString(sets [][]int, resultset bool) string {
 	if len(sets) == 0 {
-		return "nil"
+		if resultset {
+			return "nil"
+		}
+		return "nil\n"
 	}
 	res := make([]string, len(sets))
 	for i, set := range sets {
-		res[i] = setToString(set)
+		if resultset {
+			res[i] = fmt.Sprintf("%s", setToString(set, false))
+		} else {
+			res[i] = fmt.Sprintf("S%d: %s\n", i+1, setToString(set, false))
+		}
 	}
-	return fmt.Sprintf("%s", strings.Join(res, " "))
+	sep := ""
+	if resultset {
+		sep = " # "
+	}
+	return strings.Join(res, sep)
 }
 
-func ExampleGreedyCoverage() {
-	var first = true
+func ExampleGreedyCoverageIndex() {
 	gc := func(sets [][]int) {
-		if !first {
-			//fmt.Println("---")
-		}
-		first = false
-		res := GreedyCoverage(sets)
-		fmt.Println("IN ", setsToString(sets))
-		fmt.Println("OUT", setsToString(res))
+		res := GreedyCoverageIndex(sets)
+		fmt.Print(setsToString(sets, false))
+		fmt.Println("Result:", setToString(res, true))
 	}
 	// Basic Examples
 	gc([][]int{})
@@ -49,22 +62,67 @@ func ExampleGreedyCoverage() {
 	gc([][]int{{1, 2, 3}, {2, 4}, {3, 4}, {4, 5}})
 	gc([][]int{{1, 2}, {2, 3, 4, 5}, {6, 7, 8, 9, 10, 11, 12, 13}, {1, 3, 5, 7, 9, 11, 13}, {2, 4, 6, 8, 10, 12, 13}})
 	// Output:
-	// IN  nil
-	// OUT nil
-	// IN  (0)
-	// OUT (0)
-	// IN  (0 1)
-	// OUT (0 1)
-	// IN  (0) (0)
-	// OUT (0)
-	// IN  (0) (1)
-	// OUT (0) (1)
-	// IN  (0 2) (1 3) (2 3) (0 1)
-	// OUT (0 2) (1 3)
-	// IN  (0 1 2) (3 4 5) (0 1 2 3 4 5)
-	// OUT (0 1 2 3 4 5)
-	// IN  (0 1) (2 3) (4 5) (6 7)
-	// OUT (0 1) (2 3) (4 5) (6 7)
-	// IN  (1 2 3) (2 4) (3 4) (4 5)
-	// OUT (1 2 3) (4 5)
+	// nil
+	// Result: nil
+	// S1: 0
+	// Result: S1
+	// S1: 0 1
+	// Result: S1
+	// S1: 0
+	// S2: 0
+	// Result: S1
+	// S1: 0
+	// S2: 1
+	// Result: S1 S2
+	// S1: 0 2
+	// S2: 1 3
+	// S3: 2 3
+	// S4: 0 1
+	// Result: S1 S2
+	// S1: 0 1 2
+	// S2: 3 4 5
+	// S3: 0 1 2 3 4 5
+	// Result: S3
+	// S1: 0 1
+	// S2: 2 3
+	// S3: 4 5
+	// S4: 6 7
+	// Result: S1 S2 S3 S4
+	// S1: 1 2 3
+	// S2: 2 4
+	// S3: 3 4
+	// S4: 4 5
+	// Result: S1 S4
+	// S1: 1 2
+	// S2: 2 3 4 5
+	// S3: 6 7 8 9 10 11 12 13
+	// S4: 1 3 5 7 9 11 13
+	// S5: 2 4 6 8 10 12 13
+	// Result: S3 S2 S1
+}
+
+func ExampleGreedyCoverage() {
+	gc := func(sets [][]int) {
+		res := GreedyCoverage(sets)
+		fmt.Print(setsToString(sets, false))
+		fmt.Println("Result:", setsToString(res, true))
+	}
+	gc([][]int{})
+	gc([][]int{{0}})
+	gc([][]int{{0}, {1}})
+	gc([][]int{{1, 2}, {2, 3, 4, 5}, {6, 7, 8, 9, 10, 11, 12, 13}, {1, 3, 5, 7, 9, 11, 13}, {2, 4, 6, 8, 10, 12, 13}})
+	// Output:
+	// nil
+	// Result: nil
+	// S1: 0
+	// Result: 0
+	// S1: 0
+	// S2: 1
+	// Result: 0 # 1
+	// S1: 1 2
+	// S2: 2 3 4 5
+	// S3: 6 7 8 9 10 11 12 13
+	// S4: 1 3 5 7 9 11 13
+	// S5: 2 4 6 8 10 12 13
+	// Result: 6 7 8 9 10 11 12 13 # 2 3 4 5 # 1 2
 }
