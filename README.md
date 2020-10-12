@@ -8,7 +8,7 @@ Consider there are four sets `{1, 2, 3}`, `{2, 4}`, `{3, 4}` and `{4, 5}`. The s
 
 ```golang
 mySets := [][]int{{1, 2, 3}, {2, 4}, {3, 4}, {4, 5}}
-minimalIndices := setcover.GreedyCoverage(mySets) // equals []int{0, 3}
+minimalIndices := setcover.GreedyCoverageIndex(mySets) // equals []int{0, 3}
 ```
 
 ### Exceptions:
